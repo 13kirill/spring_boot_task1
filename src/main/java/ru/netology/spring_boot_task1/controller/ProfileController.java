@@ -11,7 +11,6 @@ import ru.netology.spring_boot_task1.profile.SystemProfile;
 @SpringBootApplication
 public class ProfileController {
 
-
     private SystemProfile profile;
 
     public ProfileController(SystemProfile profile) {

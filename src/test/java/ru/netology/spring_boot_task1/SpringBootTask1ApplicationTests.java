@@ -1,13 +1,61 @@
 package ru.netology.spring_boot_task1;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.ResponseEntity;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.netology.spring_boot_task1.profile.SystemProfile;
 
-@SpringBootTest
+import java.nio.file.Paths;
+
+@Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SpringBootTask1ApplicationTests {
 
+    @Autowired
+    TestRestTemplate testRestTemplate;
+
+    @Container
+    private static final GenericContainer<?> prodappContainer = new GenericContainer<>("prodapp")
+            .withExposedPorts(8081);
+    @Container
+    private static final GenericContainer<?> devappContainer = new GenericContainer<>("devapp")
+            .withExposedPorts(8080);
+
+    @BeforeAll
+    public static void setUp() {
+        prodappContainer.start();
+        devappContainer.start();
+    }
+
+
     @Test
-    void contextLoads() {
+    void contextLoadsDevApp() {
+        String HOST = "http://localhost:";
+        Integer port = prodappContainer.getMappedPort(8080);
+        System.out.println("port: " + port);
+        ResponseEntity<String> forEntity = testRestTemplate
+                .getForEntity(HOST + port, String.class);
+        System.out.println(forEntity.getBody());
+        Assertions.assertEquals("Current profile is production", forEntity.getBody());
+    }
+
+    @Test
+    void contextProdApp() {
+        String HOST = "http://localhost:";
+        Integer port = prodappContainer.getMappedPort(8080);
+        System.out.println("port: " + port);
+        ResponseEntity<String> forEntity = testRestTemplate
+                .getForEntity(HOST + port, String.class);
+        System.out.println(forEntity.getBody());
+        Assertions.assertEquals("Current profile is production", forEntity.getBody());
     }
 
 }
